@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartStock Pro - Inventory Management Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 3px solid #e9ecef;
+            overflow-x: auto;
+        }
+        
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 1em;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .tab:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            margin-bottom: -3px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        
+        .alert-section {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .alert-section h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .status-low {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .status-ok {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .status-warning {
+            color: #ffc107;
+            font-weight: 600;
+        }
+        
+        .instructions {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .instructions h3 {
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 SmartStock Pro</h1>
+            <p>Professional Inventory Management System for SMEs</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('dashboard')">Dashboard</button>
+            <button class="tab" onclick="showTab('inventory')">Master Inventory</button>
+            <button class="tab" onclick="showTab('incoming')">Incoming Stock</button>
+            <button class="tab" onclick="showTab('outgoing')">Outgoing Stock</button>
+            <button class="tab" onclick="showTab('suppliers')">Suppliers</button>
+            <button class="tab" onclick="showTab('reports')">Reports</button>
+            <button class="tab" onclick="showTab('setup')">Setup Guide</button>
+        </div>
+        
+        <div class="content">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <h2 style="margin-bottom: 20px;">Business Overview</h2>
+                
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <h3>Total Items</h3>
+                        <div class="value" id="totalItems">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Value</h3>
+                        <div class="value" id="totalValue">₦0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Low Stock Items</h3>
+                        <div class="value" id="lowStock">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Out of Stock</h3>
+                        <div class="value" id="outStock">0</div>
+                    </div>
+                </div>
+                
+                <div class="alert-section" id="alertSection" style="display: none;">
+                    <h3>⚠️ Stock Alerts</h3>
+                    <div id="alerts"></div>
+                </div>
+                
+                <h3 style="margin: 30px 0 15px 0;">Activity Log</h3>
+                <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <input type="date" id="filterDate" style="padding: 10px; border: 2px solid #e9ecef; border-radius: 8px;">
+                    <button class="btn btn-primary" onclick="filterActivityByDate()">Filter by Date</button>
+                    <button class="btn" onclick="clearDateFilter()" style="background: #6c757d; color: white;">Show All</button>
+                </div>
+                <div class="table-container">
+                    <table id="recentActivity">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Item</th>
+                                <th>Type</th>
+                                <th>Quantity</th>
+                                <th>Staff</th>
+                                <th>Sign-off</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activityBody">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #6c757d;">No recent activity</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <h4 style="margin-bottom: 10px;">End-of-Day Sign-off</h4>
+                    <p style="color: #6c757d; margin-bottom: 10px;">Sign off on today's transactions to confirm accuracy</p>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <input type="text" id="signoffName" placeholder="Your name" style="padding: 10px; border: 2px solid #e9ecef; border-radius: 8px; flex: 1; min-width: 200px;">
+                        <button class="btn btn-primary" onclick="signOffDay()">Sign Off Today</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Master Inventory Tab -->
+            <div id="inventory" class="tab-content">
+                <h2 style="margin-bottom: 20px;">Master Inventory</h2>
+                
+                <div style="margin-bottom: 20px;">
+                    <input type="text" id="searchInventory" placeholder="🔍 Search items..." style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px;">
+                </div>
+                
+                <button class="btn btn-primary" onclick="showAddItemForm()">+ Add New Item</button>
+                
+                <div id="addItemForm" style="display: none; margin-top: 20px; background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <h3 style="margin-bottom: 15px;">Add New Item</h3>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Item Name *</label>
+                            <input type="text" id="itemName" placeholder="e.g., Steel Rods 12mm">
+                        </div>
+                        <div class="form-group">
+                            <label>Category *</label>
+                            <select id="itemCategory">
+                                <option value="">Select category</option>
+                                <option value="Raw Materials">Raw Materials</option>
+                                <option value="Finished Products">Finished Products</option>
+                                <option value="Supplies">Supplies</option>
+                                <option value="Equipment">Equipment</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Unit *</label>
+                            <input type="text" id="itemUnit" placeholder="e.g., pieces, kg, liters">
+                        </div>
+                        <div class="form-group">
+                            <label>Current Quantity *</label>
+                            <input type="number" id="itemQuantity" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Reorder Level *</label>
+                            <input type="number" id="reorderLevel" placeholder="Minimum stock before alert">
+                        </div>
+                        <div class="form-group">
+                            <label>Unit Cost (₦) *</label>
+                            <input type="number" id="unitCost" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Supplier</label>
+                            <input type="text" id="itemSupplier" placeholder="Supplier name">
+                        </div>
+                        <div class="form-group">
+                            <label>Location</label>
+                            <input type="text" id="itemLocation" placeholder="e.g., Warehouse A, Shelf 3">
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="addItem()">Add Item</button>
+                        <button class="btn" onclick="hideAddItemForm()" style="margin-left: 10px; background: #6c757d; color: white;">Cancel</button>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Category</th>
+                                <th>Quantity</th>
+                                <th>Unit</th>
+                                <th>Unit Cost</th>
+                                <th>Total Value</th>
+                                <th>Status</th>
+                                <th>Location</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTable">
+                            <tr>
+                                <td colspan="8" style="text-align: center; color: #6c757d;">No items yet. Add your first item above!</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Incoming Stock Tab -->
+            <div id="incoming" class="tab-content">
+                <h2 style="margin-bottom: 20px;">Incoming Stock</h2>
+                
+                <button class="btn btn-primary" onclick="showIncomingForm()">+ Record Incoming Stock</button>
+                
+                <div id="incomingForm" style="display: none; margin-top: 20px; background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <h3 style="margin-bottom: 15px;">Record Incoming Stock</h3>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Date *</label>
+                            <input type="date" id="incomingDate">
+                        </div>
+                        <div class="form-group">
+                            <label>Item *</label>
+                            <select id="incomingItem">
+                                <option value="">Select item</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Quantity *</label>
+                            <input type="number" id="incomingQty" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Supplier</label>
+                            <input type="text" id="incomingSupplier" placeholder="Supplier name">
+                        </div>
+                        <div class="form-group">
+                            <label>Staff Name *</label>
+                            <input type="text" id="incomingStaff" placeholder="Who received this?">
+                        </div>
+                        <div class="form-group">
+                            <label>Notes</label>
+                            <input type="text" id="incomingNotes" placeholder="Any additional notes">
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="recordIncoming()">Record</button>
+                        <button class="btn" onclick="hideIncomingForm()" style="margin-left: 10px; background: #6c757d; color: white;">Cancel</button>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Item</th>
+                                <th>Quantity</th>
+                                <th>Supplier</th>
+                                <th>Staff</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="incomingTable">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #6c757d;">No incoming stock recorded yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Outgoing Stock Tab -->
+            <div id="outgoing" class="tab-content">
+                <h2 style="margin-bottom: 20px;">Outgoing Stock</h2>
+                
+                <button class="btn btn-primary" onclick="showOutgoingForm()">+ Record Outgoing Stock</button>
+                
+                <div id="outgoingForm" style="display: none; margin-top: 20px; background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <h3 style="margin-bottom: 15px;">Record Outgoing Stock</h3>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Date *</label>
+                            <input type="date" id="outgoingDate">
+                        </div>
+                        <div class="form-group">
+                            <label>Item *</label>
+                            <select id="outgoingItem">
+                                <option value="">Select item</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Quantity *</label>
+                            <input type="number" id="outgoingQty" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Purpose *</label>
+                            <select id="outgoingPurpose">
+                                <option value="">Select purpose</option>
+                                <option value="Sale">Sale</option>
+                                <option value="Production">Production</option>
+                                <option value="Transfer">Transfer</option>
+                                <option value="Damaged">Damaged/Waste</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Staff Name *</label>
+                            <input type="text" id="outgoingStaff" placeholder="Who handled this?">
+                        </div>
+                        <div class="form-group">
+                            <label>Notes</label>
+                            <input type="text" id="outgoingNotes" placeholder="Any additional notes">
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="recordOutgoing()">Record</button>
+                        <button class="btn" onclick="hideOutgoingForm()" style="margin-left: 10px; background: #6c757d; color: white;">Cancel</button>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Item</th>
+                                <th>Quantity</th>
+                                <th>Purpose</th>
+                                <th>Staff</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="outgoingTable">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #6c757d;">No outgoing stock recorded yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Suppliers Tab -->
+            <div id="suppliers" class="tab-content">
+                <h2 style="margin-bottom: 20px;">Supplier Directory</h2>
+                
+                <button class="btn btn-primary" onclick="showSupplierForm()">+ Add Supplier</button>
+                
+                <div id="supplierForm" style="display: none; margin-top: 20px; background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <h3 style="margin-bottom: 15px;">Add Supplier</h3>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Supplier Name *</label>
+                            <input type="text" id="supplierName" placeholder="Company name">
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Person</label>
+                            <input type="text" id="supplierContact" placeholder="Contact name">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone *</label>
+                            <input type="tel" id="supplierPhone" placeholder="080XXXXXXXX">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="supplierEmail" placeholder="email@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Address</label>
+                            <input type="text" id="supplierAddress" placeholder="Business address">
+                        </div>
+                        <div class="form-group">
+                            <label>Items Supplied</label>
+                            <input type="text" id="supplierItems" placeholder="e.g., Steel, Aluminum">
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="addSupplier()">Add Supplier</button>
+                        <button class="btn" onclick="hideSupplierForm()" style="margin-left: 10px; background: #6c757d; color: white;">Cancel</button>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Supplier Name</th>
+                                <th>Contact Person</th>
+                                <th>Phone</th>
+                                <th>Email</th>
+                                <th>Items Supplied</th>
+                            </tr>
+                        </thead>
+                        <tbody id="supplierTable">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: #6c757d;">No suppliers added yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Reports Tab -->
+            <div id="reports" class="tab-content">
+                <h2 style="margin-bottom: 20px;">Reports & Analytics</h2>
+                
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <h3>Total Stock Value</h3>
+                        <div class="value" id="reportTotalValue">₦0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Items Below Reorder</h3>
+                        <div class="value" id="reportLowStock">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>This Month In</h3>
+                        <div class="value" id="reportMonthIn">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>This Month Out</h3>
+                        <div class="value" id="reportMonthOut">0</div>
+                    </div>
+                </div>
+                
+                <h3 style="margin: 30px 0 15px 0;">Stock by Category</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Items Count</th>
+                                <th>Total Quantity</th>
+                                <th>Total Value</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoryReport">
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #6c757d;">No data available</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3 style="margin: 30px 0 15px 0;">Monthly Variance Report (Theft Detection)</h3>
+                <div class="instructions">
+                    <p><strong>How it works:</strong> Compare expected stock (opening + incoming - outgoing) with actual physical count. Red flags indicate discrepancies that need investigation.</p>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <button class="btn btn-primary" onclick="showVarianceForm()">+ Record Physical Count</button>
+                </div>
+                
+                <div id="varianceForm" style="display: none; margin-bottom: 20px; background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <h4 style="margin-bottom: 15px;">Record Physical Count</h4>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Select Item *</label>
+                            <select id="varianceItem">
+                                <option value="">Select item</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Physical Count *</label>
+                            <input type="number" id="physicalCount" placeholder="Actual quantity counted">
+                        </div>
+                        <div class="form-group">
+                            <label>Counted By *</label>
+                            <input type="text" id="countedBy" placeholder="Staff name">
+                        </div>
+                        <div class="form-group">
+                            <label>Date Counted *</label>
+                            <input type="date" id="countDate">
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="recordPhysicalCount()">Record Count</button>
+                        <button class="btn" onclick="hideVarianceForm()" style="margin-left: 10px; background: #6c757d; color: white;">Cancel</button>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>System Quantity</th>
+                                <th>Physical Count</th>
+                                <th>Variance</th>
+                                <th>Status</th>
+                                <th>Counted By</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="varianceReport">
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: #6c757d;">No physical counts recorded yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Setup Guide Tab -->
+            <div id="setup" class="tab-content">
+                <h2 style="margin-bottom: 20px;">Setup Guide & Instructions</h2>
+                
+                <div class="instructions">
+                    <h3>📋 Getting Started</h3>
+                    <ul>
+                        <li><strong>Step 1:</strong> Add all your current inventory items in the "Master Inventory" tab</li>
+                        <li><strong>Step 2:</strong> Set reorder levels for each item to get low stock alerts</li>
+                        <li><strong>Step 3:</strong> Add your suppliers in the "Suppliers" tab</li>
+                        <li><strong>Step 4:</strong> Start recording incoming and outgoing stock daily</li>
+                        <li><strong>Step 5:</strong> Monitor your dashboard for alerts and insights</li>
+                    </ul>
+                </div>
+                
+                <div class="instructions" style="margin-top: 20px;">
+                    <h3>🎯 Best Practices</h3>
+                    <ul>
+                        <li><strong>Daily Updates:</strong> Record all stock movements the same day they happen</li>
+                        <li><strong>Staff Training:</strong> Ensure all staff know how to record transactions</li>
+                        <li><strong>Regular Audits:</strong> Do physical counts weekly/monthly and check for discrepancies</li>
+                        <li><strong>Backup Data:</strong> This demo stores data locally - export important data regularly</li>
+                        <li><strong>Review Reports:</strong> Check the Reports tab weekly to identify trends</li>
+                    </ul>
+                </div>
+                
+                <div class="instructions" style="margin-top: 20px; background: #fff3cd; border-left-color: #ffc107;">
+                    <h3>⚠️ Important Notes</h3
