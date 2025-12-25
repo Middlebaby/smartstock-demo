@@ -264,13 +264,13 @@
         </div>
         
         <div class="tabs">
-            <button class="tab active" onclick="showTab('dashboard')">Dashboard</button>
-            <button class="tab" onclick="showTab('inventory')">Master Inventory</button>
-            <button class="tab" onclick="showTab('incoming')">Incoming Stock</button>
-            <button class="tab" onclick="showTab('outgoing')">Outgoing Stock</button>
-            <button class="tab" onclick="showTab('suppliers')">Suppliers</button>
-            <button class="tab" onclick="showTab('reports')">Reports</button>
-            <button class="tab" onclick="showTab('setup')">Setup Guide</button>
+            <button class="tab active" onclick="showTab(event, 'dashboard')">Dashboard</button>
+            <button class="tab" onclick="showTab(event, 'inventory')">Master Inventory</button>
+            <button class="tab" onclick="showTab(event, 'incoming')">Incoming Stock</button>
+            <button class="tab" onclick="showTab(event, 'outgoing')">Outgoing Stock</button>
+            <button class="tab" onclick="showTab(event, 'suppliers')">Suppliers</button>
+            <button class="tab" onclick="showTab(event, 'reports')">Reports</button>
+            <button class="tab" onclick="showTab(event, 'setup')">Setup Guide</button>
         </div>
         
         <div class="content">
@@ -741,3 +741,4 @@
                 
                 <div class="instructions" style="margin-top: 20px; background: #fff3cd; border-left-color: #ffc107;">
                     <h3>⚠️ Important Notes</h3
+
